@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+</head>
+
+<body>
+
+  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+
+  <script>
+    async function fetchViaProxy(url, options) {
+      try {
+        const proxyUrl = 'https://corsproxy.io/?';
+        const targetUrl = url;
+        const proxiedUrl = proxyUrl + encodeURIComponent(targetUrl);
+
+        const response = await fetch(proxiedUrl, options);
+        return response;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function getPDFText(url) {
+      let text = '';
+
+      // Fetch the PDF file
+      const response = await fetchViaProxy(url);
+      const pdfData = await response.arrayBuffer();
+
+      // Load the PDF file
+      const pdf = await pdfjsLib.getDocument(pdfData).promise;
+
+      // Get the text content of each page
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const pageTextContent = await page.getTextContent();
+        text += pageTextContent.items.map(item => item.str).join('');
+      }
+      console.log(text)
+      return text;
+    }
+
+    getPDFText('https://ueab.ac.ke/wp-content/uploads/2022/KUCCPS2022/Admissions%20letters%201.pdf')
+  </script>
+
+</body>
+
+</html>
